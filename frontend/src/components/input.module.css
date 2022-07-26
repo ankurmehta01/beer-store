@@ -1,0 +1,16 @@
+.inputContainer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+}
+.inputContainer input {
+  width: 250px;
+  height: 30px;
+  margin-top: 5px;
+}
+
+.large {
+  font-size: 40px;
+  font-weight: bolder;
+}

@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  background-color: black;
+  color: white;
+  position: fixed;
+  top: 0%;
+  left: 0%;
+}
+.main {
+  width: 70%;
+  display: flex;
+  justify-content: flex-end;
+  height: 60px;
+}
+.list {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.list li {
+  margin-left: 0.3rem;
+}
+.list select {
+  background-color: black;
+  color: white;
+  border: none;
+}
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.logo span {
+  color: #f28e1c;
+}
+.logo a {
+  text-decoration: none;
+  color: white;
+  font-weight: bolder;
+  font-size: larger;
+}
+@media screen and (max-width: 700px) {
+  .container {
+    justify-content: space-around;
+  }
+}
