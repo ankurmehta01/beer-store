@@ -6,35 +6,15 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { IconContext } from "react-icons";
 import StoreList from "./StoreList";
 import { getAllData, getAssignedStores, getBaseStores } from "./database/db";
-import { useForm, useFormState, useWatch } from "react-hook-form";
-
-const Controller = ({ control, register, name, rules, render }) => {
-  const value = useWatch({
-    control,
-    name,
-  });
-  // const { errors } = useFormState({
-  //   control,
-  //   name,
-  // });
-  const props = register(name, rules);
-
-  return render({
-    value,
-    onChange: (e) =>
-      props.onChange({
-        target: {
-          name,
-          value: e.target.value,
-        },
-      }),
-    onBlur: props.onBlur,
-    name: props.name,
-  });
-};
+import { useForm } from "react-hook-form";
+import { postData } from "../helper/functions";
+import Controller from "./Controller";
+import RadioButton from "./RadioButton";
+import SearchList from "./SearchList";
+import inputData from "./formData";
 
 function Form() {
-  let allStore = getAllData();
+  let allStore;
   let baseStores = getBaseStores();
 
   const {
@@ -58,6 +38,7 @@ function Form() {
   const [selectedId, setSelectedId] = useState(0);
   const [selectedBaseStore, setSelectedBaseStore] = useState(baseStores);
   const [selectedAssignedStore, setSelectedAssignedStore] = useState([]);
+  const [searchedStores, setSearchedStore] = useState([]);
 
   let allFormData = {
     baseStore: null,
@@ -68,11 +49,29 @@ function Form() {
   const [isBase, setIsBase] = useState(true);
   console.log(isBase, "isBase..........");
 
-  let searchedStores = allStore.filter((item) => {
-    return item.address
-      .toLowerCase()
-      .includes(enteredSearchValue.toLowerCase());
-  });
+  // useEffect(() => {
+  //   allStore = getAllData().then((data) => {
+  //     return data;
+  //   });
+  // }, []);
+
+  useEffect(() => {
+    console.log("useEffect 2");
+    getAllData()
+      .then((data) => {
+        console.log(allStore, "allStore.....");
+        return data;
+      })
+      .then((data) => {
+        let searchedStoresArray = data.filter((item) => {
+          return item.address
+            .toLowerCase()
+            .includes(enteredSearchValue.toLowerCase());
+        });
+        setSearchedStore(searchedStoresArray);
+        console.log(searchedStores, "serchedstore");
+      });
+  }, []);
 
   const searchValueChangeHandler = (e) => {
     const enteredValue = e.target.value;
@@ -80,8 +79,13 @@ function Form() {
     setEnteredSearchValue(enteredValue);
   };
 
+  const testingFunction = () => {
+    console.log("testing function called", allStore);
+  };
+
   const serachListClickHandler = (e) => {
     const id = parseInt(e.currentTarget.getAttribute("id"));
+    console.log(allStore, "allStore........");
     allStore.map((item) => {
       if (item.id === id) {
         setSelectedId(item.id);
@@ -89,6 +93,17 @@ function Form() {
       }
     });
   };
+
+  const radioChangeHandler = (e) => {
+    const id = e.target.getAttribute("id");
+    if (id === "assigned") {
+      setIsBase(false);
+    }
+    if (id === "base") {
+      setIsBase(true);
+    }
+  };
+
   const addUserHandler = (e) => {
     e.preventDefault();
     const id = selectedId;
@@ -152,10 +167,15 @@ function Form() {
 
   function submitHandler(data) {
     console.log(data, "data from form.js");
+
     allFormData.baseStore = selectedBaseStore;
     allFormData.assignedStores = selectedAssignedStore;
     allFormData.basicInformation = [data];
     console.log("allformData", allFormData);
+    //  postData(data).then((res) => {
+    //    console.log(res, "after post data is called");
+    //  });
+    console.log(JSON.stringify(allFormData));
   }
 
   return (
@@ -210,29 +230,29 @@ function Form() {
               />
               {errors.firstName && <span>{errors.firstName.message}</span>}
             </div>
-            <div className={classes.inputContainer}>
-              <Controller
-                {...{
-                  control,
-                  register,
-                  name: "userName",
-                  rules: {
-                    required: {
-                      value: true,
-                      message: "*required",
-                    },
-                    pattern: {
-                      value: /^[a-zA-Z0-9]+$/,
-                      message: "Username format is not correct.",
-                    },
-                  },
-                  render: (props) => (
-                    <Input {...props} label="Username" type="text" />
-                  ),
-                }}
-              />
-              {errors.userName && <span>{errors.userName.message}</span>}
-            </div>
+
+            {inputData.map((item) => {
+              return (
+                <div className={classes.inputContainer}>
+                  <Controller
+                    {...{
+                      control,
+                      register,
+                      name: item.name,
+                      rules: item.rules,
+                      render: (props) => (
+                        <Input
+                          {...props}
+                          label={item.label}
+                          type={item.label}
+                        />
+                      ),
+                    }}
+                  />
+                  {errors.userName && <span>{errors.userName.message}</span>}
+                </div>
+              );
+            })}
           </div>
           <div className={classes.column2}>
             {/* <div className={classes.selectContainer}> */}
@@ -312,44 +332,13 @@ function Form() {
           </Button>
         </div>
 
-        <div className={classes.radioContainer}>
-          <input
-            type="radio"
-            id="base"
-            name="store"
-            value="base"
-            checked={isBase ? true : false}
-            onChange={(e) => setIsBase(true)}
-          />
-          <label>Base Store</label>
-
-          <input
-            type="radio"
-            id="assigned"
-            name="store"
-            value="assigned"
-            checked={isBase ? false : true}
-            onChange={(e) => setIsBase(false)}
-          />
-          <label>Assigned Store</label>
-        </div>
+        <RadioButton isBase={isBase} radioChangeHandler={radioChangeHandler} />
 
         {enteredSearchValue && (
-          <div className={classes.storesList}>
-            <ul>
-              {searchedStores.map((item) => {
-                return (
-                  <li
-                    className={classes.listItem}
-                    id={item.id}
-                    onClick={serachListClickHandler}
-                  >
-                    {item.address}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+          <SearchList
+            searchedStores={searchedStores}
+            serachListClickHandler={serachListClickHandler}
+          />
         )}
 
         <div className={classes.row3}>

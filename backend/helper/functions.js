@@ -1,11 +1,11 @@
 const config = require("../db/dbConfig");
 const sql = require("mssql");
 
-const getData = async () => {
+const getData = async (tableName) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(config.sqlConfig);
-    const result = await sql.query("select * from products");
+    const result = await sql.query(`select * from ${tableName}`);
     return result;
   } catch (err) {
     // ... error checks
@@ -13,12 +13,20 @@ const getData = async () => {
   }
 };
 
-const postData = async (id, name) => {
+const postUserData = async (
+  employeeId,
+  firstName,
+  userName,
+  role,
+  lastName,
+  email,
+  tableName
+) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
     await sql.connect(config.sqlConfig);
     const result = await sql.query(
-      `insert into products values(${id},'${name}')`
+      `insert into ${tableName} values(${employeeId},'${firstName}','${userName}','${role}','${lastName}','${email}')`
     );
     return result;
   } catch (err) {
@@ -27,4 +35,4 @@ const postData = async (id, name) => {
     console.log(err);
   }
 };
-module.exports = { getData, postData };
+module.exports = { getData, postUserData };
