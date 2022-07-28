@@ -16,7 +16,16 @@ app.get("/", (req, res) => {
 
 app.post("/user", (req, res) => {
   console.log("post runing");
-  const { email, employeeId, firstName, lastName, role, userName } = req.body;
+
+  const { baseStore, assignedStores, basicInformation } = req.body;
+
+  const { employeeId, firstName, userName, role, lastName, email } =
+    basicInformation[0];
+
+  console.log(employeeId, firstName, userName, role, lastName, email);
+
+  const store = helper.mergeArray(baseStore, assignedStores, employeeId);
+  console.log(store, "store.......................................");
 
   if (employeeId !== null) {
     helper
@@ -27,10 +36,9 @@ app.post("/user", (req, res) => {
         role,
         lastName,
         email,
-        "userInfo"
+        store
       )
       .then((result) => {
-        console.log(result);
         res.status(200).json({ body: req.body });
       });
   }

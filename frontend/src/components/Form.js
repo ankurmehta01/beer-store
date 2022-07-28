@@ -11,11 +11,19 @@ import { postData } from "../helper/functions";
 import Controller from "./Controller";
 import RadioButton from "./RadioButton";
 import SearchList from "./SearchList";
-import inputData from "./formData";
+import { inputDataColumn1, inputDataColumn2 } from "./formData";
 
 function Form() {
-  let allStore;
   let baseStores = getBaseStores();
+
+  const default_values = {
+    firstName: "",
+    lastName: "",
+    employeeId: "",
+    userName: "",
+    role: "",
+    email: "",
+  };
 
   const {
     register,
@@ -24,21 +32,15 @@ function Form() {
     setValue,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      employeeId: "",
-      userName: "",
-      role: "",
-      email: "",
-    },
+    defaultValues: default_values,
   });
 
   const [enteredSearchValue, setEnteredSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState(0);
-  const [selectedBaseStore, setSelectedBaseStore] = useState(baseStores);
+  const [selectedBaseStore, setSelectedBaseStore] = useState([]);
   const [selectedAssignedStore, setSelectedAssignedStore] = useState([]);
   const [searchedStores, setSearchedStore] = useState([]);
+  const [allStore, setAllStore] = useState([]);
 
   let allFormData = {
     baseStore: null,
@@ -49,16 +51,12 @@ function Form() {
   const [isBase, setIsBase] = useState(true);
   console.log(isBase, "isBase..........");
 
-  // useEffect(() => {
-  //   allStore = getAllData().then((data) => {
-  //     return data;
-  //   });
-  // }, []);
-
   useEffect(() => {
-    console.log("useEffect 2");
+    console.log("useEffect ");
     getAllData()
       .then((data) => {
+        setAllStore(data);
+        console.log(data, "from useeffect data");
         console.log(allStore, "allStore.....");
         return data;
       })
@@ -172,11 +170,11 @@ function Form() {
     allFormData.assignedStores = selectedAssignedStore;
     allFormData.basicInformation = [data];
     console.log("allformData", allFormData);
-    //  postData(data).then((res) => {
-    //    console.log(res, "after post data is called");
-    //  });
-    console.log(JSON.stringify(allFormData));
+    postData(allFormData).then((res) => {
+      console.log(res, "after post data is called");
+    });
   }
+  console.log(errors, "errors.......");
 
   return (
     <IconContext.Provider value={{ size: "15px" }}>
@@ -186,52 +184,7 @@ function Form() {
       >
         <div className={classes.row1}>
           <div className={classes.column1}>
-            <div className={classes.inputContainer}>
-              <Controller
-                {...{
-                  control,
-                  register,
-                  name: "employeeId",
-                  rules: {
-                    required: {
-                      value: true,
-                      message: "*required",
-                    },
-
-                    maxLength: { value: 3, message: "Limit exceeded" },
-                  },
-                  render: (props) => (
-                    <Input {...props} label="Employee Id" type="number" />
-                  ),
-                }}
-              />
-              {errors.employeeId && <span>{errors.employeeId.message}</span>}
-            </div>
-            <div className={classes.inputContainer}>
-              <Controller
-                {...{
-                  control,
-                  register,
-                  name: "firstName",
-                  rules: {
-                    required: {
-                      value: true,
-                      message: "*required",
-                    },
-                    pattern: {
-                      value: /^[a-zA-Z]+$/,
-                      message: "Only alphabet values are required.",
-                    },
-                  },
-                  render: (props) => (
-                    <Input {...props} label="First Name" type="text" />
-                  ),
-                }}
-              />
-              {errors.firstName && <span>{errors.firstName.message}</span>}
-            </div>
-
-            {inputData.map((item) => {
+            {inputDataColumn1.map((item) => {
               return (
                 <div className={classes.inputContainer}>
                   <Controller
@@ -249,7 +202,9 @@ function Form() {
                       ),
                     }}
                   />
-                  {errors.userName && <span>{errors.userName.message}</span>}
+                  {errors[item.name] && (
+                    <span>{errors[item.name].message}</span>
+                  )}
                 </div>
               );
             })}
@@ -268,50 +223,30 @@ function Form() {
               {errors.role && <span>{errors.role.message}</span>}
             </div>
             {/* </div> */}
-            <div className={classes.inputContainer}>
-              <Controller
-                {...{
-                  control,
-                  register,
-                  name: "lastName",
-                  rules: {
-                    required: {
-                      value: true,
-                      message: "*required",
-                    },
-                    pattern: {
-                      value: /^[a-zA-Z]+$/,
-                      message: "Only alphabet values are required.",
-                    },
-                  },
-                  render: (props) => (
-                    <Input {...props} label="Last Name" type="text" />
-                  ),
-                }}
-              />
-              {errors.lastName && <span>{errors.lastName.message}</span>}
-            </div>
-
-            <div className={classes.inputContainer}>
-              <Controller
-                {...{
-                  control,
-                  register,
-                  name: "email",
-                  rules: {
-                    pattern: {
-                      value:
-                        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
-                      message: "Email is not in a right format.",
-                    },
-                  },
-                  render: (props) => (
-                    <Input {...props} label="Email" type="text" />
-                  ),
-                }}
-              />
-              {errors.email && <span>{errors.email.message}</span>}
-            </div>
+            {inputDataColumn2.map((item) => {
+              return (
+                <div className={classes.inputContainer}>
+                  <Controller
+                    {...{
+                      control,
+                      register,
+                      name: item.name,
+                      rules: item.rules,
+                      render: (props) => (
+                        <Input
+                          {...props}
+                          label={item.label}
+                          type={item.label}
+                        />
+                      ),
+                    }}
+                  />
+                  {errors[item.name] && (
+                    <span>{errors[item.name].message}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
