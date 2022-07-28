@@ -25,7 +25,19 @@ let dummy_store = [
   },
 ];
 
-export function getAllData() {
+export async function getAllData() {
+  console.log("getalldata called");
+  //   fetch("http://localhost:3001/")
+  //     .then((response) => response.json())
+  //     .then((response) => {
+  //       console.log("second then is called");
+  //       console.log(response);
+  //       return dummy_store;
+  //     });
+
+  let response = await fetch("http://localhost:3001/");
+  response = await response.json();
+
   return dummy_store;
 }
 
