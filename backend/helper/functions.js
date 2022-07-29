@@ -4,8 +4,8 @@ const sql = require("mssql");
 const getData = async (tableName) => {
   try {
     // make sure that any items are correctly URL encoded in the connection string
-    await sql.connect(config.sqlConfig);
-    const result = await sql.query(`select * from ${tableName}`);
+    let pool = await sql.connect(config.sqlConfig);
+    const result = await pool.request().query(`select * from ${tableName}`);
     return result;
   } catch (err) {
     // ... error checks
@@ -29,11 +29,19 @@ const postUserData = async (
       `insert into userInfo values(${employeeId},'${firstName}','${userName}','${role}','${lastName}','${email}')`
     );
 
-    const result2 = await store.map((item) =>
-      sql.query(
-        `insert into userStore values(${item.u_id},${item.s_id},'${item.storeType}')`
-      )
-    );
+    let values = [
+      [99, 1, "base"],
+      [99, 1, "base"],
+    ];
+
+    const query = "insert into userStore values ? ";
+    const result2 = await sql.query(query, [values]);
+
+    // const result2 = await store.map((item) =>
+    //   sql.query(
+    //     `insert into userStore values(${item.u_id},${item.s_id},'${item.storeType}')`
+    //   )
+    // );
   } catch (err) {
     // ... error checks
     console.log("error............helper");
